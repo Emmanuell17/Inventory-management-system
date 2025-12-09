@@ -30,17 +30,6 @@ function SearchFilters({ filters, setFilters }) {
   return (
     <div className="search-filters">
       <div className="filter-group">
-        <label htmlFor="search">Search</label>
-        <input
-          type="text"
-          id="search"
-          placeholder="Search by name or category..."
-          value={filters.search}
-          onChange={(e) => handleChange('search', e.target.value)}
-        />
-      </div>
-
-      <div className="filter-group">
         <label htmlFor="category">Category</label>
         <select
           id="category"
@@ -54,10 +43,12 @@ function SearchFilters({ filters, setFilters }) {
         </select>
       </div>
 
-      {(filters.search || filters.category) && (
+      {filters.category && (
         <button
           className="btn-clear"
-          onClick={() => setFilters({ search: '', category: '' })}
+          onClick={() => {
+            setFilters({ category: '' });
+          }}
         >
           Clear Filters
         </button>

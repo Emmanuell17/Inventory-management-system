@@ -8,10 +8,10 @@ function ItemList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
-    search: '',
     category: ''
   });
 
+  // Fetch items when filters change
   useEffect(() => {
     fetchItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -21,7 +21,6 @@ function ItemList() {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filters.search) params.append('search', filters.search);
       if (filters.category) params.append('category', filters.category);
 
       const response = await fetch(`/api/items?${params.toString()}`);
@@ -43,33 +42,13 @@ function ItemList() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/items/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Failed to delete item');
-      
-      fetchItems();
-    } catch (err) {
-      alert('Error deleting item: ' + err.message);
-      console.error('Error deleting item:', err);
-    }
-  };
-
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatPrice = (price) => {
-    return `$${parseFloat(price).toFixed(2)}`;
-  };
+  const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
+  const isLowStock = (quantity) => quantity < 10;
 
   if (loading) {
     return <div className="loading">Loading items...</div>;
@@ -92,14 +71,62 @@ function ItemList() {
     );
   }
 
+  const lowStockCount = items.filter(item => isLowStock(item.quantity)).length;
+  
+  // Calculate total unique categories
+  const uniqueCategories = new Set(items.map(item => item.category));
+  const totalCategories = uniqueCategories.size;
+  
+  // Calculate items expiring soon (within next 14 days)
+  const today = new Date();
+  const twoWeeksFromNow = new Date(today);
+  twoWeeksFromNow.setDate(today.getDate() + 14);
+  
+  const expiringSoonCount = items.filter(item => {
+    if (!item.expiration_date) return false;
+    const expDate = new Date(item.expiration_date);
+    return expDate >= today && expDate <= twoWeeksFromNow;
+  }).length;
+
   return (
     <div className="item-list-container">
       <div className="item-list-header">
-        <h2>Inventory Items</h2>
+        <div>
+          <h2>Seller Dashboard</h2>
+          <p className="dashboard-subtitle">Manage your grocery inventory</p>
+        </div>
         <Link to="/add" className="btn btn-primary">+ Add New Item</Link>
       </div>
 
-      <SearchFilters filters={filters} setFilters={setFilters} />
+      {items.length > 0 && (
+        <div className="dashboard-stats">
+          <div className="stat-card">
+            <span className="stat-label">Total Items</span>
+            <span className="stat-value">{items.length}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Total Categories</span>
+            <span className="stat-value">{totalCategories}</span>
+          </div>
+          {lowStockCount > 0 && (
+            <div className="stat-card warning">
+              <span className="stat-label">Low Stock Alerts</span>
+              <span className="stat-value">{lowStockCount}</span>
+            </div>
+          )}
+          {expiringSoonCount > 0 && (
+            <div className="stat-card danger">
+              <span className="stat-label">Expiring Soon</span>
+              <span className="stat-value">{expiringSoonCount}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <SearchFilters 
+        filters={filters} 
+        setFilters={setFilters}
+      />
 
       {items.length === 0 ? (
         <div className="empty-state">
@@ -115,27 +142,31 @@ function ItemList() {
                 <th>Quantity</th>
                 <th>Price</th>
                 <th>Expiration Date</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {items.map(item => (
-                <tr key={item.id}>
+                <tr key={item.id} className={isLowStock(item.quantity) ? 'low-stock' : ''}>
                   <td>{item.name}</td>
                   <td>{item.category}</td>
-                  <td>{item.quantity}</td>
+                  <td>
+                    <span className={isLowStock(item.quantity) ? 'quantity-low' : ''}>
+                      {item.quantity}
+                    </span>
+                  </td>
                   <td>{formatPrice(item.price)}</td>
                   <td>{formatDate(item.expiration_date)}</td>
                   <td>
-                    <div className="actions">
-                      <Link to={`/edit/${item.id}`} className="btn btn-small btn-edit">Edit</Link>
-                      <button 
-                        onClick={() => handleDelete(item.id)}
-                        className="btn btn-small btn-delete"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {isLowStock(item.quantity) ? (
+                      <span className="status warning">Low stock</span>
+                    ) : (
+                      <span className="status ok">In stock</span>
+                    )}
+                  </td>
+                  <td>
+                    <Link to={`/edit/${item.id}`} className="btn btn-secondary btn-small">Edit</Link>
                   </td>
                 </tr>
               ))}

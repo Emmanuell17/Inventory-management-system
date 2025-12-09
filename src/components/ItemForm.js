@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './ItemForm.css';
+import { GROCERY_CATEGORIES } from '../constants';
+
+// Log categories on load to verify they're correct
+console.log('Available categories:', GROCERY_CATEGORIES);
 
 function ItemForm() {
   const { id } = useParams();
@@ -9,7 +13,8 @@ function ItemForm() {
 
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
+    category: 'Fruits', // Default to first category
+    customCategory: '',
     quantity: '',
     price: '',
     expiration_date: ''
@@ -31,9 +36,12 @@ function ItemForm() {
       if (!response.ok) throw new Error('Failed to fetch item');
       
       const data = await response.json();
+      // Check if category is in predefined list, otherwise set to "Other"
+      const isPredefinedCategory = GROCERY_CATEGORIES.includes(data.category);
       setFormData({
         name: data.name || '',
-        category: data.category || '',
+        category: isPredefinedCategory ? data.category : 'Other',
+        customCategory: isPredefinedCategory ? '' : data.category,
         quantity: data.quantity || '',
         price: data.price || '',
         expiration_date: data.expiration_date ? data.expiration_date.split('T')[0] : ''
@@ -55,6 +63,10 @@ function ItemForm() {
     }));
   };
 
+  const resolvedCategory = formData.category === 'Other'
+    ? formData.customCategory || ''
+    : formData.category;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -66,7 +78,8 @@ function ItemForm() {
 
       const payload = {
         ...formData,
-        quantity: parseInt(formData.quantity),
+        category: resolvedCategory,
+        quantity: parseInt(formData.quantity, 10),
         price: parseFloat(formData.price),
         expiration_date: formData.expiration_date || null
       };
@@ -84,7 +97,7 @@ function ItemForm() {
         throw new Error(errorData.error || 'Failed to save item');
       }
 
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
       console.error('Error saving item:', err);
@@ -101,7 +114,7 @@ function ItemForm() {
     <div className="item-form-container">
       <div className="form-header">
         <h2>{isEdit ? 'Edit Item' : 'Add New Item'}</h2>
-        <button onClick={() => navigate('/')} className="btn btn-secondary">
+        <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">
           Cancel
         </button>
       </div>
@@ -128,15 +141,28 @@ function ItemForm() {
 
         <div className="form-group">
           <label htmlFor="category">Category *</label>
-          <input
-            type="text"
+          <select
             id="category"
             name="category"
             value={formData.category}
             onChange={handleChange}
             required
-            placeholder="e.g., Dairy, Bakery, Produce"
-          />
+          >
+            {GROCERY_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+          {formData.category === 'Other' && (
+            <input
+              type="text"
+              name="customCategory"
+              value={formData.customCategory}
+              onChange={handleChange}
+              placeholder="Enter custom category name"
+              required
+              style={{ marginTop: '0.5rem' }}
+            />
+          )}
         </div>
 
         <div className="form-row">
@@ -185,7 +211,7 @@ function ItemForm() {
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Saving...' : (isEdit ? 'Update Item' : 'Add Item')}
           </button>
-          <button type="button" onClick={() => navigate('/')} className="btn btn-secondary">
+          <button type="button" onClick={() => navigate('/dashboard')} className="btn btn-secondary">
             Cancel
           </button>
         </div>
