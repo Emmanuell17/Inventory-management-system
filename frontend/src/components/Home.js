@@ -34,17 +34,17 @@ function Home() {
         </p>
         <div className="home-actions">
           {currentUser ? (
-            <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
-              Go to Dashboard
+            <button className="btn btn-primary btn-cta-large" onClick={() => navigate('/dashboard')}>
+              View Inventory
             </button>
           ) : (
             <>
               <button 
-                className="btn btn-primary" 
+                className="btn btn-primary btn-cta-large" 
                 onClick={handleSignIn}
                 disabled={loading}
               >
-                {loading ? 'Signing in...' : 'Sign in with Google'}
+                {loading ? 'Signing in...' : 'Get Started'}
               </button>
               {error && <p className="error-message">{error}</p>}
             </>
@@ -52,17 +52,52 @@ function Home() {
         </div>
       </div>
       <div className="home-grid">
-        <div className="card">
-          <h3>Add & manage items</h3>
-          <p>Enter grocery items with name, category, quantity, price, and expiration.</p>
+        <div 
+          className="card clickable-card" 
+          onClick={() => currentUser ? navigate('/dashboard') : handleSignIn()}
+        >
+          <h3>🧺 Add & Manage Items</h3>
+          <p>Add items with quantity, price, and expiration dates.</p>
         </div>
-        <div className="card">
-          <h3>Search & filter</h3>
-          <p>Find items quickly by category, search, or low-stock filter.</p>
+        <div 
+          className="card clickable-card" 
+          onClick={() => currentUser ? navigate('/dashboard') : handleSignIn()}
+        >
+          <h3>🔍 Search & Filter</h3>
+          <p>Find items instantly by category or stock level.</p>
         </div>
-        <div className="card">
-          <h3>Low-stock alerts</h3>
-          <p>Highlight items that need restocking so you never run out.</p>
+        <div 
+          className="card clickable-card" 
+          onClick={() => currentUser ? navigate('/dashboard') : handleSignIn()}
+        >
+          <h3>⚠️ Low-Stock Alerts</h3>
+          <p>Get notified before items run out.</p>
+        </div>
+      </div>
+
+      <div className="who-this-is-for-section">
+        <h2 className="section-title">Perfect For</h2>
+        <div className="audience-grid">
+          <div className="audience-item">
+            <div className="audience-icon">🏪</div>
+            <h3>Grocery Stores</h3>
+            <p>Manage inventory for full-scale grocery operations with ease.</p>
+          </div>
+          <div className="audience-item">
+            <div className="audience-icon">🏬</div>
+            <h3>Mini-marts & Kiosks</h3>
+            <p>Perfect solution for small retail spaces tracking daily stock.</p>
+          </div>
+          <div className="audience-item">
+            <div className="audience-icon">🛒</div>
+            <h3>Market Sellers</h3>
+            <p>Keep track of your products and never miss a sale opportunity.</p>
+          </div>
+          <div className="audience-item">
+            <div className="audience-icon">📋</div>
+            <h3>Inventory Clerks</h3>
+            <p>Streamline your workflow with efficient stock management tools.</p>
+          </div>
         </div>
       </div>
     </div>

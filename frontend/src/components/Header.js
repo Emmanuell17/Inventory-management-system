@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Header.css';
 
 function Header() {
   const { currentUser, signOut } = useAuth();
+  const location = useLocation();
+  const isDashboardPage = location.pathname === '/dashboard' || location.pathname.startsWith('/add') || location.pathname.startsWith('/edit');
 
   const handleSignOut = async () => {
     try {
@@ -24,7 +26,9 @@ function Header() {
           {currentUser && (
             <>
               <Link to="/dashboard" className="nav-link">Dashboard</Link>
-              <Link to="/add" className="nav-link nav-button">+ Add Item</Link>
+              {isDashboardPage && (
+                <Link to="/add" className="nav-link nav-button">+ Add Item</Link>
+              )}
               {currentUser.photoURL && (
                 <img 
                   src={currentUser.photoURL} 
