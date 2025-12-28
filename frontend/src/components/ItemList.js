@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ItemList.css';
 import SearchFilters from './SearchFilters';
+import AnimatedList from './AnimatedList';
 
 function ItemList() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -181,53 +183,67 @@ function ItemList() {
           <p>No items found. Add your first item to get started!</p>
         </div>
       ) : (
-        <div className="items-table-container">
-          <table className="items-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Expiration Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(item => (
-                <tr key={item.id} className={isLowStock(item.quantity) ? 'low-stock' : ''}>
-                  <td>{item.name}</td>
-                  <td>{item.category}</td>
-                  <td>
-                    <span className={isLowStock(item.quantity) ? 'quantity-low' : ''}>
+        <div className="animated-items-container">
+          <AnimatedList
+            items={items}
+            onItemSelect={(item) => {
+              // Navigate to edit page when item is selected
+              navigate(`/edit/${item.id}`);
+            }}
+            renderItem={(item, index, isSelected) => (
+              <div className={`animated-item-card ${isLowStock(item.quantity) ? 'low-stock' : ''} ${isSelected ? 'selected' : ''}`}>
+                <div className="item-card-header">
+                  <h3 className="item-name">{item.name}</h3>
+                  {isLowStock(item.quantity) ? (
+                    <span className="status warning">Low stock</span>
+                  ) : (
+                    <span className="status ok">In stock</span>
+                  )}
+                </div>
+                <div className="item-card-details">
+                  <div className="item-detail">
+                    <span className="detail-label">Category:</span>
+                    <span className="detail-value">{item.category}</span>
+                  </div>
+                  <div className="item-detail">
+                    <span className="detail-label">Quantity:</span>
+                    <span className={`detail-value ${isLowStock(item.quantity) ? 'quantity-low' : ''}`}>
                       {item.quantity}
                     </span>
-                  </td>
-                  <td>{formatPrice(item.price)}</td>
-                  <td>{formatDate(item.expiration_date)}</td>
-                  <td>
-                    {isLowStock(item.quantity) ? (
-                      <span className="status warning">Low stock</span>
-                    ) : (
-                      <span className="status ok">In stock</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <Link to={`/edit/${item.id}`} className="btn btn-secondary btn-small">Edit</Link>
-                      <button 
-                        onClick={() => handleDelete(item.id, item.name)} 
-                        className="btn btn-danger btn-small"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                  <div className="item-detail">
+                    <span className="detail-label">Price:</span>
+                    <span className="detail-value">{formatPrice(item.price)}</span>
+                  </div>
+                  <div className="item-detail">
+                    <span className="detail-label">Expiration:</span>
+                    <span className="detail-value">{formatDate(item.expiration_date)}</span>
+                  </div>
+                </div>
+                <div className="item-card-actions">
+                  <Link 
+                    to={`/edit/${item.id}`} 
+                    className="btn btn-secondary btn-small"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Edit
+                  </Link>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(item.id, item.name);
+                    }} 
+                    className="btn btn-danger btn-small"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
+            showGradients={true}
+            enableArrowNavigation={true}
+            displayScrollbar={true}
+          />
         </div>
       )}
     </div>

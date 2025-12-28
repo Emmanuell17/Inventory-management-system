@@ -47,3 +47,6 @@ export const mockCategories = ["Dairy", "Bakery", "Produce", "Meat"];
 
 
 
+
+
+

@@ -14,3 +14,6 @@ psql -U Emmanuel -d inventory_db -c "DELETE FROM items; ALTER SEQUENCE items_id_
 
 
 
+
+
+
