@@ -1,0 +1,112 @@
+.scroll-list-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scroll-list {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem;
+  padding-right: 0.5rem;
+}
+
+.scroll-list.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll-list.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.scroll-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.scroll-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.item {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(124, 58, 237, 0.4);
+  transform: translateX(4px);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.2);
+}
+
+.item.selected {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+  transform: translateX(8px);
+}
+
+.item-text {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.item.selected .item-text {
+  color: #fff;
+  font-weight: 500;
+}
+
+.top-gradient,
+.bottom-gradient {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+.top-gradient {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(11, 18, 36, 0.95), transparent);
+}
+
+.bottom-gradient {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(11, 18, 36, 0.95), transparent);
+}
+
+@media (max-width: 768px) {
+  .scroll-list {
+    max-height: 500px;
+    padding: 0.75rem;
+  }
+
+  .item {
+    padding: 1rem 1.25rem;
+  }
+
+  .item-text {
+    font-size: 0.9rem;
+  }
+}
