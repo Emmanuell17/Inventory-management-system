@@ -12,6 +12,16 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
+// Validate Firebase config
+if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'your-api-key-here') {
+  console.error('Firebase API key is missing or not configured');
+  console.error('Environment variables:', {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY ? 'Set' : 'Missing',
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN ? 'Set' : 'Missing',
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID ? 'Set' : 'Missing'
+  });
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 

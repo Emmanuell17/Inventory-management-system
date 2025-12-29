@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ItemForm.css';
 import { GROCERY_CATEGORIES } from '../constants';
+import { getApiUrl } from '../utils/api';
 
 // Log categories on load to verify they're correct
 console.log('Available categories:', GROCERY_CATEGORIES);
@@ -36,7 +37,7 @@ function ItemForm() {
     
     try {
       setLoading(true);
-      const response = await fetch(`/api/items/${id}`, {
+      const response = await fetch(getApiUrl(`api/items/${id}`), {
         headers: {
           'x-user-email': currentUser.email
         }
@@ -81,7 +82,7 @@ function ItemForm() {
     setError(null);
 
     try {
-      const url = isEdit ? `/api/items/${id}` : '/api/items';
+      const url = isEdit ? getApiUrl(`api/items/${id}`) : getApiUrl('api/items');
       const method = isEdit ? 'PUT' : 'POST';
 
       const payload = {

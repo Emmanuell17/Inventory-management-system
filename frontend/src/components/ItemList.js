@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './ItemList.css';
 import SearchFilters from './SearchFilters';
 import AnimatedList from './AnimatedList';
+import { getApiUrl } from '../utils/api';
 
 function ItemList() {
   const { currentUser } = useAuth();
@@ -37,7 +38,7 @@ function ItemList() {
       if (filters.category) params.append('category', filters.category);
       if (filters.lowStock) params.append('lowStock', 'true');
 
-      const response = await fetch(`/api/items?${params.toString()}`, {
+      const response = await fetch(getApiUrl(`api/items?${params.toString()}`), {
         headers: {
           'x-user-email': currentUser.email
         }
@@ -76,7 +77,7 @@ function ItemList() {
     }
 
     try {
-      const response = await fetch(`/api/items/${itemId}`, {
+      const response = await fetch(getApiUrl(`api/items/${itemId}`), {
         method: 'DELETE',
         headers: {
           'x-user-email': currentUser.email

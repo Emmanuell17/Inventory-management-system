@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './SearchFilters.css';
+import { getApiUrl } from '../utils/api';
 
 function SearchFilters({ filters, setFilters, searchInput, setSearchInput, userEmail, refreshTrigger }) {
   const [categories, setCategories] = useState([]);
@@ -14,7 +15,7 @@ function SearchFilters({ filters, setFilters, searchInput, setSearchInput, userE
     if (!userEmail) return;
     
     try {
-      const response = await fetch('/api/items/meta/categories', {
+      const response = await fetch(getApiUrl('api/items/meta/categories'), {
         headers: {
           'x-user-email': userEmail
         }
