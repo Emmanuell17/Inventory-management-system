@@ -72,7 +72,7 @@
    npm start
    ```
 
-The app should automatically open in your browser at `http://localhost:3000`
+The app should automatically open in your browser at `http://localhost:3002`
 
 ## Troubleshooting
 

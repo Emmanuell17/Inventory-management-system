@@ -67,7 +67,7 @@ This will install Firebase SDK (already added to package.json).
    npm start
    ```
 
-2. Navigate to `http://localhost:3000`
+2. Navigate to `http://localhost:3002`
 3. Click "Sign in with Google"
 4. Complete the Google sign-in flow
 5. You should be redirected to the dashboard

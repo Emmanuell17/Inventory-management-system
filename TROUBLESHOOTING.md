@@ -22,7 +22,7 @@ Check if you see this in your frontend terminal:
 ```
 Compiled successfully!
 You can now view inventory-frontend in the browser.
-  Local:            http://localhost:3000
+  Local:            http://localhost:3002
 ```
 
 ### 4. Check Network Tab

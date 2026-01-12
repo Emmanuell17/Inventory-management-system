@@ -31,7 +31,7 @@
    ```bash
    npm start
    ```
-4. The browser should open automatically at `http://localhost:3000`
+4. The browser should open automatically at `http://localhost:3002`
 
 ## ✅ Success Indicators
 

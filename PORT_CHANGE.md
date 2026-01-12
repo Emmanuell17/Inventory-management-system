@@ -39,7 +39,7 @@ Port 5000 is used by macOS AirPlay/AirTunes service, which conflicts with the ba
 
 - Backend API: http://localhost:5001/api
 - Health Check: http://localhost:5001/api/health
-- Frontend: http://localhost:3000 (unchanged)
+- Frontend: http://localhost:3002 (changed from 3000 to avoid conflict with other app)
 
 
 
