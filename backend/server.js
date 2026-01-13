@@ -8,7 +8,45 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+// CORS configuration - allow requests from Vercel frontend and localhost
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:3002',
+      'http://localhost:3000',
+      process.env.FRONTEND_URL, // Vercel frontend URL
+      /\.vercel\.app$/, // All Vercel preview deployments
+    ].filter(Boolean);
+    
+    // Check if origin matches allowed patterns
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return origin === allowed;
+      } else if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      // In development, allow all origins for easier testing
+      if (process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -30,14 +68,22 @@ app.use((err, req, res, next) => {
 db.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('❌ Database connection failed:', err.message);
-    console.error('⚠️  Please check your .env file and ensure PostgreSQL is running');
+    if (process.env.DATABASE_URL) {
+      console.error('⚠️  Please check your DATABASE_URL environment variable (Render PostgreSQL)');
+    } else {
+      console.error('⚠️  Please check your DB_* environment variables and ensure PostgreSQL is running');
+    }
     console.error('⚠️  Server will still start, but database operations will fail');
   } else {
     console.log('✅ Database connection successful');
+    const dbSource = process.env.DATABASE_URL ? 'Render PostgreSQL' : 'Local PostgreSQL';
+    console.log(`📊 Database source: ${dbSource}`);
+    
     // Verify grocery_items table exists
     db.query('SELECT COUNT(*) FROM grocery_items', (err, res) => {
       if (err) {
         console.warn('⚠️  grocery_items table may not exist yet');
+        console.warn('💡 Run the schema.sql file to create the table');
       } else {
         console.log(`📦 grocery_items table ready (${res.rows[0].count} items)`);
       }
@@ -48,7 +94,12 @@ db.query('SELECT NOW()', (err, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`✅ Server is running on port ${PORT}`);
-  console.log(`📡 API available at http://localhost:${PORT}/api`);
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`📡 API available at ${process.env.RENDER_EXTERNAL_URL || 'https://your-backend.onrender.com'}/api`);
+  } else {
+    console.log(`📡 API available at http://localhost:${PORT}/api`);
+  }
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 

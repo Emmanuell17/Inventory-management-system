@@ -53,9 +53,17 @@ function ItemList() {
       // Trigger categories refresh after items are fetched
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      const errorMsg = err.message.includes('Failed to fetch') || err.message.includes('NetworkError')
-        ? 'Cannot connect to server. Please make sure the backend is running on port 5001.'
-        : err.message;
+      const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.REACT_APP_API_URL;
+      
+      let errorMsg = err.message;
+      if (isNetworkError) {
+        if (isProduction) {
+          errorMsg = 'Cannot connect to backend server. Please check if the backend is deployed and running.';
+        } else {
+          errorMsg = 'Cannot connect to server. Please make sure the backend is running on port 5001.';
+        }
+      }
       setError(errorMsg);
       console.error('Error fetching items:', err);
     } finally {
@@ -102,17 +110,26 @@ function ItemList() {
   }
 
   if (error) {
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.REACT_APP_API_URL;
+    
     return (
       <div className="item-list-container">
         <div className="error">
           <h3>⚠️ Connection Error</h3>
           <p>{error}</p>
-          <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-            Make sure the backend server is running:<br />
-            <code style={{ background: '#f0f0f0', padding: '0.25rem 0.5rem', borderRadius: '3px' }}>
-              cd backend && npm run dev
-            </code>
-          </p>
+          {!isProduction && (
+            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+              Make sure the backend server is running:<br />
+              <code style={{ background: '#f0f0f0', padding: '0.25rem 0.5rem', borderRadius: '3px' }}>
+                cd backend && npm run dev
+              </code>
+            </p>
+          )}
+          {isProduction && (
+            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+              Please check if the backend service is deployed and accessible.
+            </p>
+          )}
         </div>
       </div>
     );
