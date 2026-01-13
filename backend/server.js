@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const db = require('./db');
 const itemsRouter = require('./routes/items');
+const { initializeDatabase } = require('./database/init');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -64,9 +65,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// Test database connection on startup
-db.query('SELECT NOW()', (err, res) => {
-  if (err) {
+// Initialize database and start server
+async function startServer() {
+  // Test database connection first
+  try {
+    await db.query('SELECT NOW()');
+    console.log('✅ Database connection successful');
+    const dbSource = process.env.DATABASE_URL ? 'Render PostgreSQL' : 'Local PostgreSQL';
+    console.log(`📊 Database source: ${dbSource}`);
+    
+    // Initialize database schema (creates tables if they don't exist)
+    await initializeDatabase();
+  } catch (err) {
     console.error('❌ Database connection failed:', err.message);
     if (process.env.DATABASE_URL) {
       console.error('⚠️  Please check your DATABASE_URL environment variable (Render PostgreSQL)');
@@ -74,32 +84,21 @@ db.query('SELECT NOW()', (err, res) => {
       console.error('⚠️  Please check your DB_* environment variables and ensure PostgreSQL is running');
     }
     console.error('⚠️  Server will still start, but database operations will fail');
-  } else {
-    console.log('✅ Database connection successful');
-    const dbSource = process.env.DATABASE_URL ? 'Render PostgreSQL' : 'Local PostgreSQL';
-    console.log(`📊 Database source: ${dbSource}`);
-    
-    // Verify grocery_items table exists
-    db.query('SELECT COUNT(*) FROM grocery_items', (err, res) => {
-      if (err) {
-        console.warn('⚠️  grocery_items table may not exist yet');
-        console.warn('💡 Run the schema.sql file to create the table');
-      } else {
-        console.log(`📦 grocery_items table ready (${res.rows[0].count} items)`);
-      }
-    });
   }
-});
+  
+  // Start server
+  app.listen(PORT, () => {
+    console.log(`✅ Server is running on port ${PORT}`);
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`📡 API available at ${process.env.RENDER_EXTERNAL_URL || 'https://your-backend.onrender.com'}/api`);
+    } else {
+      console.log(`📡 API available at http://localhost:${PORT}/api`);
+    }
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
-  if (process.env.NODE_ENV === 'production') {
-    console.log(`📡 API available at ${process.env.RENDER_EXTERNAL_URL || 'https://your-backend.onrender.com'}/api`);
-  } else {
-    console.log(`📡 API available at http://localhost:${PORT}/api`);
-  }
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Start the server
+startServer();
 
 
