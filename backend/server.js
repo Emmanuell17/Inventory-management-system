@@ -59,6 +59,32 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// Manual database initialization endpoint (for troubleshooting)
+app.post('/api/init-db', async (req, res) => {
+  try {
+    console.log('🔄 Manual database initialization requested...');
+    const result = await initializeDatabase();
+    if (result) {
+      res.json({ 
+        status: 'success', 
+        message: 'Database initialized successfully' 
+      });
+    } else {
+      res.status(500).json({ 
+        status: 'error', 
+        message: 'Database initialization failed' 
+      });
+    }
+  } catch (error) {
+    console.error('❌ Manual initialization error:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message,
+      details: error.code 
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
