@@ -15,12 +15,22 @@ export const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to build API URLs
 export const getApiUrl = (endpoint) => {
-  // Remove leading slash if present to avoid double slashes
+  // Remove leading slash from endpoint if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  return `${API_BASE_URL}/${cleanEndpoint}`;
+  
+  // If API_BASE_URL is empty (development), return relative path
+  if (!API_BASE_URL) {
+    return `/${cleanEndpoint}`;
+  }
+  
+  // If API_BASE_URL exists (production), ensure no trailing slash and build URL
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  return `${baseUrl}/${cleanEndpoint}`;
 };
 
-// Log API configuration in development for debugging
-if (process.env.NODE_ENV === 'development') {
-  console.log('API Base URL:', API_BASE_URL || 'Using proxy (localhost:5001)');
-}
+// Log API configuration for debugging
+console.log('🔧 API Configuration:', {
+  baseUrl: API_BASE_URL || 'Using proxy (localhost:5001)',
+  environment: process.env.NODE_ENV || 'development',
+  hasApiUrl: !!process.env.REACT_APP_API_URL
+});

@@ -53,19 +53,23 @@ function ItemList() {
       // Trigger categories refresh after items are fetched
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
+      const isNetworkError = err.message.includes('Failed to fetch') || 
+                            err.message.includes('NetworkError') ||
+                            err.message.includes('string did not match');
       const isProduction = process.env.NODE_ENV === 'production' || process.env.REACT_APP_API_URL;
       
       let errorMsg = err.message;
       if (isNetworkError) {
         if (isProduction) {
-          errorMsg = 'Cannot connect to backend server. Please check if the backend is deployed and running.';
+          errorMsg = 'Cannot connect to backend server. Please check if the backend is deployed and running on Render.';
         } else {
           errorMsg = 'Cannot connect to server. Please make sure the backend is running on port 5001.';
         }
       }
       setError(errorMsg);
-      console.error('Error fetching items:', err);
+      console.error('❌ Error fetching items:', err);
+      console.error('📡 API Base URL:', process.env.REACT_APP_API_URL || 'Using proxy');
+      console.error('🌍 Environment:', process.env.NODE_ENV || 'development');
     } finally {
       setLoading(false);
     }
