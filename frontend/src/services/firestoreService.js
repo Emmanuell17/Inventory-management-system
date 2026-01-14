@@ -7,7 +7,6 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  orderBy,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -23,11 +22,11 @@ export const getItems = async (userEmail, filters = {}) => {
       throw new Error('User email is required');
     }
 
-    // Build query
+    // Build query (without orderBy to avoid index requirement)
+    // We'll sort client-side instead
     let q = query(
       collection(db, ITEMS_COLLECTION),
-      where('user_email', '==', userEmail),
-      orderBy('name', 'asc')
+      where('user_email', '==', userEmail)
     );
 
     // Execute query
@@ -62,6 +61,13 @@ export const getItems = async (userEmail, filters = {}) => {
     if (filters.lowStock === true || filters.lowStock === 'true') {
       items = items.filter(item => item.quantity < 10);
     }
+
+    // Sort by name alphabetically (client-side)
+    items.sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
 
     return items;
   } catch (error) {
