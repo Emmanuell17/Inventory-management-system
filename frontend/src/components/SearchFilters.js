@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './SearchFilters.css';
-import { getApiUrl } from '../utils/api';
+import { getCategories } from '../services/firestoreService';
 
 function SearchFilters({ filters, setFilters, searchInput, setSearchInput, userEmail, refreshTrigger }) {
   const [categories, setCategories] = useState([]);
@@ -15,15 +15,8 @@ function SearchFilters({ filters, setFilters, searchInput, setSearchInput, userE
     if (!userEmail) return;
     
     try {
-      const response = await fetch(getApiUrl('api/items/meta/categories'), {
-        headers: {
-          'x-user-email': userEmail
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-      }
+      const data = await getCategories(userEmail);
+      setCategories(data);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }

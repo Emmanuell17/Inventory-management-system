@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './ItemList.css';
 import SearchFilters from './SearchFilters';
 import AnimatedList from './AnimatedList';
-import { getApiUrl } from '../utils/api';
+import { getItems, deleteItem } from '../services/firestoreService';
 
 function ItemList() {
   const { currentUser } = useAuth();
@@ -33,43 +33,14 @@ function ItemList() {
     
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.search) params.append('search', filters.search);
-      if (filters.category) params.append('category', filters.category);
-      if (filters.lowStock) params.append('lowStock', 'true');
-
-      const response = await fetch(getApiUrl(`api/items?${params.toString()}`), {
-        headers: {
-          'x-user-email': currentUser.email
-        }
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch items: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const data = await getItems(currentUser.email, filters);
       setItems(data);
       setError(null);
       // Trigger categories refresh after items are fetched
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      const isNetworkError = err.message.includes('Failed to fetch') || 
-                            err.message.includes('NetworkError') ||
-                            err.message.includes('string did not match');
-      const isProduction = process.env.NODE_ENV === 'production' || process.env.REACT_APP_API_URL;
-      
-      let errorMsg = err.message;
-      if (isNetworkError) {
-        if (isProduction) {
-          errorMsg = 'Cannot connect to backend server. Please check if the backend is deployed and running on Render.';
-        } else {
-          errorMsg = 'Cannot connect to server. Please make sure the backend is running on port 5001.';
-        }
-      }
-      setError(errorMsg);
+      setError(err.message || 'Failed to fetch items. Please try again.');
       console.error('❌ Error fetching items:', err);
-      console.error('📡 API Base URL:', process.env.REACT_APP_API_URL || 'Using proxy');
-      console.error('🌍 Environment:', process.env.NODE_ENV || 'development');
     } finally {
       setLoading(false);
     }
@@ -89,18 +60,7 @@ function ItemList() {
     }
 
     try {
-      const response = await fetch(getApiUrl(`api/items/${itemId}`), {
-        method: 'DELETE',
-        headers: {
-          'x-user-email': currentUser.email
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete item');
-      }
-
+      await deleteItem(itemId, currentUser.email);
       // Refresh the items list after deletion
       fetchItems();
     } catch (err) {
@@ -114,26 +74,14 @@ function ItemList() {
   }
 
   if (error) {
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.REACT_APP_API_URL;
-    
     return (
       <div className="item-list-container">
         <div className="error">
-          <h3>⚠️ Connection Error</h3>
+          <h3>⚠️ Error</h3>
           <p>{error}</p>
-          {!isProduction && (
-            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-              Make sure the backend server is running:<br />
-              <code style={{ background: '#f0f0f0', padding: '0.25rem 0.5rem', borderRadius: '3px' }}>
-                cd backend && npm run dev
-              </code>
-            </p>
-          )}
-          {isProduction && (
-            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-              Please check if the backend service is deployed and accessible.
-            </p>
-          )}
+          <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+            Please check your Firebase configuration and try again.
+          </p>
         </div>
       </div>
     );

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ItemForm.css';
 import { GROCERY_CATEGORIES } from '../constants';
-import { getApiUrl } from '../utils/api';
+import { getItem, createItem, updateItem } from '../services/firestoreService';
 
 // Log categories on load to verify they're correct
 console.log('Available categories:', GROCERY_CATEGORIES);
@@ -37,14 +37,7 @@ function ItemForm() {
     
     try {
       setLoading(true);
-      const response = await fetch(getApiUrl(`api/items/${id}`), {
-        headers: {
-          'x-user-email': currentUser.email
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch item');
-      
-      const data = await response.json();
+      const data = await getItem(id, currentUser.email);
       // Check if category is in predefined list, otherwise set to "Other"
       const isPredefinedCategory = GROCERY_CATEGORIES.includes(data.category);
       setFormData({
@@ -82,9 +75,6 @@ function ItemForm() {
     setError(null);
 
     try {
-      const url = isEdit ? getApiUrl(`api/items/${id}`) : getApiUrl('api/items');
-      const method = isEdit ? 'PUT' : 'POST';
-
       const payload = {
         ...formData,
         category: resolvedCategory,
@@ -93,18 +83,10 @@ function ItemForm() {
         expiration_date: formData.expiration_date || null
       };
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-email': currentUser.email
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save item');
+      if (isEdit) {
+        await updateItem(id, payload, currentUser.email);
+      } else {
+        await createItem(payload, currentUser.email);
       }
 
       navigate('/dashboard');
