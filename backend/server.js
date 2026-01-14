@@ -13,35 +13,60 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('🌐 CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
     
     // List of allowed origins
     const allowedOrigins = [
       'http://localhost:3002',
       'http://localhost:3000',
-      process.env.FRONTEND_URL, // Vercel frontend URL
-      /\.vercel\.app$/, // All Vercel preview deployments
+      'http://localhost:3001',
+      process.env.FRONTEND_URL, // Vercel frontend URL (if set)
     ].filter(Boolean);
     
+    // Vercel patterns (both .vercel.app and custom domains)
+    const vercelPatterns = [
+      /\.vercel\.app$/, // All Vercel preview deployments (e.g., app-xyz.vercel.app)
+      /\.vercel\.app\/$/, // With trailing slash
+    ];
+    
     // Check if origin matches allowed patterns
-    const isAllowed = allowedOrigins.some(allowed => {
-      if (typeof allowed === 'string') {
-        return origin === allowed;
-      } else if (allowed instanceof RegExp) {
-        return allowed.test(origin);
+    let isAllowed = false;
+    
+    // Check exact matches first
+    if (allowedOrigins.includes(origin)) {
+      isAllowed = true;
+      console.log(`✅ CORS: Allowed origin (exact match): ${origin}`);
+    }
+    // Check Vercel patterns
+    else if (vercelPatterns.some(pattern => pattern.test(origin))) {
+      isAllowed = true;
+      console.log(`✅ CORS: Allowed origin (Vercel pattern): ${origin}`);
+    }
+    // In production, be more permissive for Vercel deployments
+    else if (process.env.NODE_ENV === 'production') {
+      // Allow any HTTPS origin in production (for flexibility with custom domains)
+      // This is safe because we require x-user-email header for authentication
+      if (origin.startsWith('https://')) {
+        isAllowed = true;
+        console.log(`✅ CORS: Allowed origin (HTTPS in production): ${origin}`);
+      } else {
+        console.warn(`⚠️  CORS: Blocked non-HTTPS origin in production: ${origin}`);
       }
-      return false;
-    });
+    }
+    // In development, allow all origins
+    else {
+      isAllowed = true;
+      console.log(`✅ CORS: Allowed origin (development mode): ${origin}`);
+    }
     
     if (isAllowed) {
       callback(null, true);
     } else {
-      // In development, allow all origins for easier testing
-      if (process.env.NODE_ENV !== 'production') {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      console.error(`❌ CORS: Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true
