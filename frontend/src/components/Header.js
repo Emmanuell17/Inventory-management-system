@@ -14,6 +14,9 @@ function Header() {
     location.pathname === '/assistant';
 
   const handleSignOut = async () => {
+    if (!window.confirm('Are you sure you want to sign out?')) {
+      return;
+    }
     try {
       await signOut();
     } catch (error) {

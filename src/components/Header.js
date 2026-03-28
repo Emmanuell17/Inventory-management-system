@@ -7,6 +7,9 @@ function Header() {
   const { currentUser, signOut } = useAuth();
 
   const handleSignOut = async () => {
+    if (!window.confirm('Are you sure you want to sign out?')) {
+      return;
+    }
     try {
       await signOut();
     } catch (error) {
