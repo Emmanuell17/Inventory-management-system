@@ -5,6 +5,7 @@ import './ItemList.css';
 import SearchFilters from './SearchFilters';
 import AnimatedList from './AnimatedList';
 import { getItems, deleteItem } from '../services/firestoreService';
+import { getReorderAdvice } from '../utils/reorder';
 
 function ItemList() {
   const { currentUser } = useAuth();
@@ -88,6 +89,7 @@ function ItemList() {
   }
 
   const lowStockCount = items.filter(item => isLowStock(item.quantity)).length;
+  const reorderNeededCount = items.filter(item => getReorderAdvice(item).reorderQty > 0).length;
   
   // Calculate total unique categories
   const uniqueCategories = new Set(items.map(item => item.category));
@@ -111,7 +113,12 @@ function ItemList() {
           <h2>Seller Dashboard</h2>
           <p className="dashboard-subtitle">Manage your grocery inventory</p>
         </div>
-        <Link to="/add" className="btn btn-primary">+ Add New Item</Link>
+        <div className="header-actions">
+          <Link to="/reorder" className="btn btn-secondary">
+            Reorder Suggestions
+          </Link>
+          <Link to="/add" className="btn btn-primary">+ Add New Item</Link>
+        </div>
       </div>
 
       {items.length > 0 && (
@@ -128,6 +135,12 @@ function ItemList() {
             <div className="stat-card warning">
               <span className="stat-label">Low Stock Alerts</span>
               <span className="stat-value">{lowStockCount}</span>
+            </div>
+          )}
+          {reorderNeededCount > 0 && (
+            <div className="stat-card warning">
+              <span className="stat-label">Reorder Needed</span>
+              <span className="stat-value">{reorderNeededCount}</span>
             </div>
           )}
           {expiringSoonCount > 0 && (

@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './SearchFilters.css';
 import { getCategories } from '../services/firestoreService';
 
 function SearchFilters({ filters, setFilters, searchInput, setSearchInput, userEmail, refreshTrigger }) {
   const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    if (userEmail) {
-      fetchCategories();
-    }
-  }, [userEmail, refreshTrigger]);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     if (!userEmail) return;
-    
+
     try {
       const data = await getCategories(userEmail);
       setCategories(data);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
-  };
+  }, [userEmail]);
+
+  useEffect(() => {
+    if (userEmail) {
+      fetchCategories();
+    }
+  }, [userEmail, refreshTrigger, fetchCategories]);
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') {

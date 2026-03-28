@@ -6,7 +6,12 @@ import './Header.css';
 function Header() {
   const { currentUser, signOut } = useAuth();
   const location = useLocation();
-  const isDashboardPage = location.pathname === '/dashboard' || location.pathname.startsWith('/add') || location.pathname.startsWith('/edit');
+  const isDashboardPage =
+    location.pathname === '/dashboard' ||
+    location.pathname.startsWith('/add') ||
+    location.pathname.startsWith('/edit') ||
+    location.pathname === '/reorder' ||
+    location.pathname === '/assistant';
 
   const handleSignOut = async () => {
     try {
@@ -26,6 +31,8 @@ function Header() {
           {currentUser && (
             <>
               <Link to="/dashboard" className="nav-link">Dashboard</Link>
+              <Link to="/reorder" className="nav-link">Reorder</Link>
+              <Link to="/assistant" className="nav-link">AI Assistant</Link>
               {isDashboardPage && (
                 <Link to="/add" className="nav-link nav-button">+ Add Item</Link>
               )}

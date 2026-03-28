@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const db = require('./db');
 const itemsRouter = require('./routes/items');
+const assistantRouter = require('./routes/assistant');
 const { initializeDatabase } = require('./database/init');
 
 const app = express();
@@ -78,6 +79,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/items', itemsRouter);
+app.use('/api/assistant', assistantRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

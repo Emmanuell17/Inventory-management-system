@@ -20,7 +20,13 @@ function ItemForm() {
     customCategory: '',
     quantity: '',
     price: '',
-    expiration_date: ''
+    expiration_date: '',
+
+    // Reorder configuration (used by reorder suggestions)
+    avg_daily_usage: '1', // units/day
+    lead_time_days: '7', // supplier lead time
+    safety_days: '2', // buffer days
+    min_order_qty: '1', // supplier minimum order quantity
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -46,7 +52,12 @@ function ItemForm() {
         customCategory: isPredefinedCategory ? '' : data.category,
         quantity: data.quantity || '',
         price: data.price || '',
-        expiration_date: data.expiration_date ? data.expiration_date.split('T')[0] : ''
+        expiration_date: data.expiration_date ? data.expiration_date.split('T')[0] : '',
+
+        avg_daily_usage: data.avg_daily_usage != null ? String(data.avg_daily_usage) : '1',
+        lead_time_days: data.lead_time_days != null ? String(data.lead_time_days) : '7',
+        safety_days: data.safety_days != null ? String(data.safety_days) : '2',
+        min_order_qty: data.min_order_qty != null ? String(data.min_order_qty) : '1',
       });
       setError(null);
     } catch (err) {
@@ -80,7 +91,12 @@ function ItemForm() {
         category: resolvedCategory,
         quantity: parseInt(formData.quantity, 10),
         price: parseFloat(formData.price),
-        expiration_date: formData.expiration_date || null
+        expiration_date: formData.expiration_date || null,
+
+        avg_daily_usage: parseFloat(formData.avg_daily_usage),
+        lead_time_days: parseFloat(formData.lead_time_days),
+        safety_days: parseFloat(formData.safety_days),
+        min_order_qty: parseInt(formData.min_order_qty, 10),
       };
 
       if (isEdit) {
@@ -197,6 +213,63 @@ function ItemForm() {
             value={formData.expiration_date}
             onChange={handleChange}
           />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="avg_daily_usage">Reorder Settings (optional but recommended)</label>
+          <div className="form-row" style={{ marginTop: '0.5rem' }}>
+            <div className="form-group">
+              <label htmlFor="avg_daily_usage">Avg daily usage (units/day)</label>
+              <input
+                type="number"
+                id="avg_daily_usage"
+                name="avg_daily_usage"
+                value={formData.avg_daily_usage}
+                onChange={handleChange}
+                min="0"
+                step="0.1"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="lead_time_days">Lead time (days)</label>
+              <input
+                type="number"
+                id="lead_time_days"
+                name="lead_time_days"
+                value={formData.lead_time_days}
+                onChange={handleChange}
+                min="0"
+                step="1"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="safety_days">Safety buffer (days)</label>
+              <input
+                type="number"
+                id="safety_days"
+                name="safety_days"
+                value={formData.safety_days}
+                onChange={handleChange}
+                min="0"
+                step="1"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="min_order_qty">Min order qty</label>
+              <input
+                type="number"
+                id="min_order_qty"
+                name="min_order_qty"
+                value={formData.min_order_qty}
+                onChange={handleChange}
+                min="1"
+                step="1"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-actions">
