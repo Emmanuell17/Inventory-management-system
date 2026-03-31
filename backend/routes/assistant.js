@@ -189,6 +189,19 @@ router.post('/chat', async (req, res) => {
     res.json({ reply });
   } catch (err) {
     console.error('Assistant route error:', err);
+    const causeCode = err?.cause?.code || err?.code;
+    if (causeCode === 'ENOTFOUND' || causeCode === 'EAI_AGAIN') {
+      return res.status(503).json({
+        error:
+          'Cannot reach Gemini (DNS/network error). Check your internet connection and DNS settings, then restart the backend and try again.',
+      });
+    }
+    if (causeCode === 'ECONNREFUSED' || causeCode === 'ETIMEDOUT') {
+      return res.status(503).json({
+        error:
+          'Cannot reach Gemini (connection refused/timed out). Check internet access/firewall, then retry.',
+      });
+    }
     const message =
       err && typeof err.message === 'string' && err.message.trim()
         ? err.message

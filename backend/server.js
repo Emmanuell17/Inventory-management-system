@@ -7,7 +7,8 @@ const assistantRouter = require('./routes/assistant');
 const { initializeDatabase } = require('./database/init');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+// Keep default aligned with `frontend/package.json` CRA proxy (http://localhost:5001)
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 // CORS configuration - allow requests from Vercel frontend and localhost
