@@ -7,7 +7,7 @@ import { buildInventorySummaryForAI } from '../utils/inventoryContext';
 import './Assistant.css';
 
 const WELCOME =
-  "Hi — I'm your inventory assistant. Ask about low stock, what to reorder first, or how reorder suggestions work. I use a live snapshot of your items when you send a message.";
+  "Hi — I'm your inventory assistant. Ask about low stock, expiring items, item counts, and category trends. I use a live snapshot of your items when you send a message.";
 
 const nextMsgId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID

@@ -5,7 +5,6 @@ import './ItemList.css';
 import SearchFilters from './SearchFilters';
 import AnimatedList from './AnimatedList';
 import { getItems, deleteItem } from '../services/firestoreService';
-import { getReorderAdvice } from '../utils/reorder';
 
 function ItemList() {
   const { currentUser } = useAuth();
@@ -55,6 +54,10 @@ function ItemList() {
   const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
   const isLowStock = (quantity) => quantity < 10;
 
+  const toggleLowStockFilter = () => {
+    setFilters((prev) => ({ ...prev, lowStock: !prev.lowStock }));
+  };
+
   const handleDelete = async (itemId, itemName) => {
     if (!window.confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
       return;
@@ -89,7 +92,6 @@ function ItemList() {
   }
 
   const lowStockCount = items.filter(item => isLowStock(item.quantity)).length;
-  const reorderNeededCount = items.filter(item => getReorderAdvice(item).reorderQty > 0).length;
   
   // Calculate total unique categories
   const uniqueCategories = new Set(items.map(item => item.category));
@@ -114,9 +116,6 @@ function ItemList() {
           <p className="dashboard-subtitle">Manage your grocery inventory</p>
         </div>
         <div className="header-actions">
-          <Link to="/reorder" className="btn btn-secondary">
-            Reorder Suggestions
-          </Link>
           <Link to="/add" className="btn btn-primary">+ Add New Item</Link>
         </div>
       </div>
@@ -132,15 +131,27 @@ function ItemList() {
             <span className="stat-value">{totalCategories}</span>
           </div>
           {lowStockCount > 0 && (
-            <div className="stat-card warning">
+            <div
+              role="button"
+              tabIndex={0}
+              aria-pressed={filters.lowStock}
+              aria-label={
+                filters.lowStock
+                  ? 'Showing low stock items only. Click to show all items.'
+                  : 'Filter to low stock items only'
+              }
+              className={`stat-card warning stat-card-interactive${filters.lowStock ? ' stat-card-active' : ''}`}
+              onClick={toggleLowStockFilter}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleLowStockFilter();
+                }
+              }}
+            >
               <span className="stat-label">Low Stock Alerts</span>
               <span className="stat-value">{lowStockCount}</span>
-            </div>
-          )}
-          {reorderNeededCount > 0 && (
-            <div className="stat-card warning">
-              <span className="stat-label">Reorder Needed</span>
-              <span className="stat-value">{reorderNeededCount}</span>
+              <span className="stat-hint">{filters.lowStock ? 'Showing only · click to clear' : 'Click to filter'}</span>
             </div>
           )}
           {expiringSoonCount > 0 && (

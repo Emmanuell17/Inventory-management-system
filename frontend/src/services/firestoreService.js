@@ -115,10 +115,6 @@ export const createItem = async (itemData, userEmail) => {
       quantity,
       price,
       expiration_date,
-      avg_daily_usage,
-      lead_time_days,
-      safety_days,
-      min_order_qty,
     } = itemData;
 
     if (!name || !category || quantity === undefined || price === undefined) {
@@ -126,16 +122,6 @@ export const createItem = async (itemData, userEmail) => {
     }
 
     // Prepare data for Firestore
-    const normalizeNumber = (value, fallback) => {
-      const num = typeof value === 'number' ? value : parseFloat(value);
-      return Number.isFinite(num) ? num : fallback;
-    };
-
-    const normalizeInt = (value, fallback) => {
-      const num = typeof value === 'number' ? value : parseInt(value, 10);
-      return Number.isFinite(num) ? num : fallback;
-    };
-
     const firestoreData = {
       name,
       category,
@@ -144,12 +130,6 @@ export const createItem = async (itemData, userEmail) => {
       user_email: userEmail,
       created_at: Timestamp.now(),
       updated_at: Timestamp.now(),
-
-      // Reorder parameters (used by reorder suggestions)
-      avg_daily_usage: normalizeNumber(avg_daily_usage, 1),
-      lead_time_days: normalizeNumber(lead_time_days, 7),
-      safety_days: normalizeNumber(safety_days, 2),
-      min_order_qty: normalizeInt(min_order_qty, 1),
     };
 
     // Add expiration_date if provided
@@ -190,21 +170,7 @@ export const updateItem = async (itemId, itemData, userEmail) => {
       quantity,
       price,
       expiration_date,
-      avg_daily_usage,
-      lead_time_days,
-      safety_days,
-      min_order_qty,
     } = itemData;
-
-    const normalizeNumber = (value, fallback) => {
-      const num = typeof value === 'number' ? value : parseFloat(value);
-      return Number.isFinite(num) ? num : fallback;
-    };
-
-    const normalizeInt = (value, fallback) => {
-      const num = typeof value === 'number' ? value : parseInt(value, 10);
-      return Number.isFinite(num) ? num : fallback;
-    };
 
     // Prepare data for Firestore
     const firestoreData = {
@@ -213,15 +179,6 @@ export const updateItem = async (itemId, itemData, userEmail) => {
       quantity: parseInt(quantity, 10),
       price: parseFloat(price),
       updated_at: Timestamp.now(),
-
-      // Reorder parameters (used by reorder suggestions)
-      avg_daily_usage: normalizeNumber(avg_daily_usage, existingItem?.avg_daily_usage ?? 1),
-      lead_time_days: normalizeNumber(
-        lead_time_days,
-        existingItem?.lead_time_days ?? 7
-      ),
-      safety_days: normalizeNumber(safety_days, existingItem?.safety_days ?? 2),
-      min_order_qty: normalizeInt(min_order_qty, existingItem?.min_order_qty ?? 1),
     };
 
     // Add expiration_date if provided

@@ -10,7 +10,6 @@ function Header() {
     location.pathname === '/dashboard' ||
     location.pathname.startsWith('/add') ||
     location.pathname.startsWith('/edit') ||
-    location.pathname === '/reorder' ||
     location.pathname === '/assistant';
 
   const handleSignOut = async () => {
@@ -34,7 +33,6 @@ function Header() {
           {currentUser && (
             <>
               <Link to="/dashboard" className="nav-link">Dashboard</Link>
-              <Link to="/reorder" className="nav-link">Reorder</Link>
               <Link to="/assistant" className="nav-link">AI Assistant</Link>
               {isDashboardPage && (
                 <Link to="/add" className="nav-link nav-button">+ Add Item</Link>

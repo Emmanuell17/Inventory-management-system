@@ -6,7 +6,6 @@ import Header from './components/Header';
 import ItemList from './components/ItemList';
 import ItemForm from './components/ItemForm';
 import Home from './components/Home';
-import ReorderSuggestions from './components/ReorderSuggestions';
 import Assistant from './components/Assistant';
 
 function ProtectedRoute({ children }) {
@@ -25,7 +24,7 @@ function AppContent() {
         <Header />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home />} /> 
             <Route
               path="/dashboard"
               element={
@@ -47,14 +46,6 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <ItemForm />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/reorder"
-              element={
-                <ProtectedRoute>
-                  <ReorderSuggestions />
                 </ProtectedRoute>
               }
             />
