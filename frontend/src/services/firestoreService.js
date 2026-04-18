@@ -62,6 +62,18 @@ export const getItems = async (userEmail, filters = {}) => {
       items = items.filter(item => item.quantity < 10);
     }
 
+    if (filters.expiringSoon === true || filters.expiringSoon === 'true') {
+      const today = new Date();
+      const twoWeeksFromNow = new Date(today);
+      twoWeeksFromNow.setDate(today.getDate() + 14);
+
+      items = items.filter((item) => {
+        if (!item.expiration_date) return false;
+        const expDate = new Date(item.expiration_date);
+        return expDate >= today && expDate <= twoWeeksFromNow;
+      });
+    }
+
     // Sort by name alphabetically (client-side)
     items.sort((a, b) => {
       const nameA = (a.name || '').toLowerCase();

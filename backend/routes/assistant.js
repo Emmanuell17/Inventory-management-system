@@ -208,6 +208,6 @@ router.post('/chat', async (req, res) => {
         : 'Assistant request failed';
     res.status(500).json({ error: message });
   }
-});
+}); 
 
 module.exports = router;

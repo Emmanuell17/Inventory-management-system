@@ -15,10 +15,12 @@ function ItemList() {
   const [filters, setFilters] = useState({
     search: '',
     category: '',
-    lowStock: false
+    lowStock: false,
+    expiringSoon: false
   });
   const [searchInput, setSearchInput] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeOverview, setActiveOverview] = useState('items');
 
   // Fetch items when filters change or user changes
   useEffect(() => {
@@ -53,9 +55,33 @@ function ItemList() {
 
   const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
   const isLowStock = (quantity) => quantity < 10;
+  const isExpiringSoon = (expirationDate) => {
+    if (!expirationDate) return false;
+    const today = new Date();
+    const twoWeeksFromNow = new Date(today);
+    twoWeeksFromNow.setDate(today.getDate() + 14);
+    const expDate = new Date(expirationDate);
+    return expDate >= today && expDate <= twoWeeksFromNow;
+  };
 
   const toggleLowStockFilter = () => {
     setFilters((prev) => ({ ...prev, lowStock: !prev.lowStock }));
+  };
+
+  const toggleExpiringSoonFilter = () => {
+    setFilters((prev) => ({ ...prev, expiringSoon: !prev.expiringSoon }));
+  };
+
+  const showTotalItemsOverview = () => {
+    setActiveOverview('items');
+    setSearchInput('');
+    setFilters({ search: '', category: '', lowStock: false, expiringSoon: false });
+  };
+
+  const showCategoriesOverview = () => {
+    setActiveOverview('categories');
+    setSearchInput('');
+    setFilters({ search: '', category: '', lowStock: false, expiringSoon: false });
   };
 
   const handleDelete = async (itemId, itemName) => {
@@ -98,15 +124,11 @@ function ItemList() {
   const totalCategories = uniqueCategories.size;
   
   // Calculate items expiring soon (within next 14 days)
-  const today = new Date();
-  const twoWeeksFromNow = new Date(today);
-  twoWeeksFromNow.setDate(today.getDate() + 14);
-  
-  const expiringSoonCount = items.filter(item => {
-    if (!item.expiration_date) return false;
-    const expDate = new Date(item.expiration_date);
-    return expDate >= today && expDate <= twoWeeksFromNow;
-  }).length;
+  const expiringSoonCount = items.filter(item => isExpiringSoon(item.expiration_date)).length;
+  const categorySummary = Array.from(uniqueCategories).map((category) => ({
+    category,
+    count: items.filter((item) => item.category === category).length
+  }));
 
   return (
     <div className="item-list-container">
@@ -122,13 +144,41 @@ function ItemList() {
 
       {items.length > 0 && (
         <div className="dashboard-stats">
-          <div className="stat-card">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={activeOverview === 'items'}
+            aria-label="Show all items"
+            className={`stat-card stat-card-interactive${activeOverview === 'items' ? ' stat-card-active' : ''}`}
+            onClick={showTotalItemsOverview}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showTotalItemsOverview();
+              }
+            }}
+          >
             <span className="stat-label">Total Items</span>
             <span className="stat-value">{items.length}</span>
+            <span className="stat-hint">{activeOverview === 'items' ? 'Showing all items' : 'Click to show all items'}</span>
           </div>
-          <div className="stat-card">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={activeOverview === 'categories'}
+            aria-label="Show total categories view"
+            className={`stat-card stat-card-interactive${activeOverview === 'categories' ? ' stat-card-active' : ''}`}
+            onClick={showCategoriesOverview}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showCategoriesOverview();
+              }
+            }}
+          >
             <span className="stat-label">Total Categories</span>
             <span className="stat-value">{totalCategories}</span>
+            <span className="stat-hint">{activeOverview === 'categories' ? 'Showing categories only' : 'Click to view categories'}</span>
           </div>
           {lowStockCount > 0 && (
             <div
@@ -154,12 +204,28 @@ function ItemList() {
               <span className="stat-hint">{filters.lowStock ? 'Showing only · click to clear' : 'Click to filter'}</span>
             </div>
           )}
-          {expiringSoonCount > 0 && (
-            <div className="stat-card danger">
-              <span className="stat-label">Expiring Soon</span>
-              <span className="stat-value">{expiringSoonCount}</span>
-            </div>
-          )}
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={filters.expiringSoon}
+            aria-label={
+              filters.expiringSoon
+                ? 'Showing items expiring soon only. Click to show all items.'
+                : 'Filter to items expiring soon'
+            }
+            className={`stat-card danger stat-card-interactive${filters.expiringSoon ? ' stat-card-active' : ''}`}
+            onClick={toggleExpiringSoonFilter}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleExpiringSoonFilter();
+              }
+            }}
+          >
+            <span className="stat-label">Expiring Soon</span>
+            <span className="stat-value">{expiringSoonCount}</span>
+            <span className="stat-hint">{filters.expiringSoon ? 'Showing only · click to clear' : 'Click to filter'}</span>
+          </div>
         </div>
       )}
 
@@ -175,6 +241,15 @@ function ItemList() {
       {items.length === 0 ? (
         <div className="empty-state">
           <p>No items found. Add your first item to get started!</p>
+        </div>
+      ) : activeOverview === 'categories' ? (
+        <div className="categories-overview">
+          {categorySummary.map(({ category, count }) => (
+            <div key={category} className="category-card">
+              <span className="category-name">{category}</span>
+              <span className="category-count">{count} item{count === 1 ? '' : 's'}</span>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="animated-items-container">

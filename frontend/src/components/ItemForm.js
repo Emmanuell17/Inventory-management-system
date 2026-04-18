@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ItemForm.css';
 import { GROCERY_CATEGORIES } from '../constants';
-import { getItem, createItem, updateItem } from '../services/firestoreService';
+import { getApiUrl } from '../utils/api';
 
 // Log categories on load to verify they're correct
 console.log('Available categories:', GROCERY_CATEGORIES);
@@ -20,7 +20,7 @@ function ItemForm() {
     customCategory: '',
     quantity: '',
     price: '',
-    expiration_date: '',
+    expiration_date: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -37,7 +37,14 @@ function ItemForm() {
     
     try {
       setLoading(true);
-      const data = await getItem(id, currentUser.email);
+      const response = await fetch(getApiUrl(`api/items/${id}`), {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch item');
+      
+      const data = await response.json();
       // Check if category is in predefined list, otherwise set to "Other"
       const isPredefinedCategory = GROCERY_CATEGORIES.includes(data.category);
       setFormData({
@@ -46,7 +53,7 @@ function ItemForm() {
         customCategory: isPredefinedCategory ? '' : data.category,
         quantity: data.quantity || '',
         price: data.price || '',
-        expiration_date: data.expiration_date ? data.expiration_date.split('T')[0] : '',
+        expiration_date: data.expiration_date ? data.expiration_date.split('T')[0] : ''
       });
       setError(null);
     } catch (err) {
@@ -75,18 +82,29 @@ function ItemForm() {
     setError(null);
 
     try {
+      const url = isEdit ? getApiUrl(`api/items/${id}`) : getApiUrl('api/items');
+      const method = isEdit ? 'PUT' : 'POST';
+
       const payload = {
         ...formData,
         category: resolvedCategory,
         quantity: parseInt(formData.quantity, 10),
         price: parseFloat(formData.price),
-        expiration_date: formData.expiration_date || null,
+        expiration_date: formData.expiration_date || null
       };
 
-      if (isEdit) {
-        await updateItem(id, payload, currentUser.email);
-      } else {
-        await createItem(payload, currentUser.email);
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save item');
       }
 
       navigate('/dashboard');

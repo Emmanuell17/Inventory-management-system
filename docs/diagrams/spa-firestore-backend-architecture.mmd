@@ -1,0 +1,46 @@
+flowchart LR
+  U["User"] --> SPA
+
+  subgraph FE["Frontend Layer (React SPA)"]
+    SPA["App Routes (App.js)\nDashboard | Add/Edit Item | Assistant"]
+    CRUDUI["Inventory UI (ItemList.js, ItemForm.js)\nList/Add/Edit/Delete"]
+    AUI["Assistant Chat UI (Assistant.js)"]
+    FS["Firestore Service (firestoreService.js)\nCRUD + user-scoped queries"]
+    AAPI["Assistant API Client (assistantApi.js)"]
+    APIU["API URL Helper (utils/api.js)"]
+
+    SPA --> CRUDUI
+    SPA --> AUI
+    CRUDUI --> FS
+    AUI --> AAPI
+    AAPI --> APIU
+  end
+
+  subgraph BAAS["BaaS Layer (Firebase)"]
+    AUTH["Firebase Authentication"]
+    DB[("Cloud Firestore\n(grocery_items)")]
+    RULES["Firestore Security Rules\nper-user access control"]
+    AUTH --> RULES
+    RULES --> DB
+  end
+
+  subgraph BE["Backend Layer (Node/Express)"]
+    PROXY["Assistant Proxy (routes/assistant.js)"]
+    CTRL["Backend Controls\n(validation, prompt policy, error handling)"]
+    ENV["Server Environment Variables\nGEMINI_API_KEY, GEMINI_MODEL"]
+    PROXY --> CTRL
+    ENV --> PROXY
+  end
+
+  GM["Gemini API"]
+  OUT["Hybrid Architecture\nBaaS + Thin Backend\n(Scalable, Maintainable, Secure)"]
+
+  FS <-->|"Firestore SDK operations"| DB
+  SPA <-->|"Google sign-in state"| AUTH
+
+  APIU -->|"assistant endpoint URL"| PROXY
+  AAPI -->|"chat messages + inventory snapshot"| PROXY
+  PROXY -->|"controlled model request"| GM
+
+  DB --> OUT
+  PROXY --> OUT

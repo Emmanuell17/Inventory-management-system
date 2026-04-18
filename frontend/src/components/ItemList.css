@@ -81,8 +81,46 @@
 }
 
 .stat-card-interactive.stat-card-active {
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.35);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.stat-card.warning.stat-card-active {
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45);
   border-color: rgba(245, 158, 11, 0.55);
+}
+
+.stat-card.danger.stat-card-active {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.categories-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.category-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-name {
+  color: #fff;
+  font-weight: 600;
+}
+
+.category-count {
+  color: #cbd5e1;
+  font-size: 0.9rem;
 }
 
 .stat-hint {

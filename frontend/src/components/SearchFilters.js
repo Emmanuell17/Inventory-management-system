@@ -84,12 +84,12 @@ function SearchFilters({ filters, setFilters, searchInput, setSearchInput, userE
         </label>
       </div>
 
-      {(filters.search || filters.category || filters.lowStock) && (
+      {(filters.search || filters.category || filters.lowStock || filters.expiringSoon) && (
         <button
           className="btn-clear"
           onClick={() => {
             setSearchInput('');
-            setFilters({ search: '', category: '', lowStock: false });
+            setFilters({ search: '', category: '', lowStock: false, expiringSoon: false });
           }}
         >
           Clear Filters
