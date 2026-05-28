@@ -160,7 +160,13 @@ export const createItem = async (itemData, userEmail) => {
     };
   } catch (error) {
     console.error('Error creating item:', error);
-    throw error;
+    const code = error?.code || '';
+    if (code === 'permission-denied') {
+      throw new Error(
+        'Permission denied. Sign in with Google and ensure Firestore rules are published in Firebase Console.'
+      );
+    }
+    throw new Error(error?.message || 'Failed to save item to Firestore.');
   }
 };
 
