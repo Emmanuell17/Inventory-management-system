@@ -28,6 +28,10 @@ Thumbs.db
 # Local-only docs (not for remote)
 PROJECT_OVERVIEW.local.md
 
+# Presentations and overview artifacts (local only)
+*.pptx
+scripts/generate_presentation.py
+
 # IDE
 .vscode/
 .idea/
