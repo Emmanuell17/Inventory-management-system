@@ -1,0 +1,15 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# If you configure the service manually, use:
+#   Root Directory: backend
+#   Build Command: npm install
+#   Start Command: npm start
+services:
+  - type: web
+    name: inventory-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
